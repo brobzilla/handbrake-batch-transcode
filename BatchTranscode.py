@@ -36,6 +36,9 @@ class TransCoder(object):
             makedirs(dirname)
 
     def touch(self, fname, times=None):
+        """ Utility method to just touch files in the output dir to verify
+            script is preserving the directory structure correctly 
+        """
         with open(fname, 'a'):
             utime(fname, times)
 
@@ -83,16 +86,19 @@ if __name__=="__main__":
            print( "Usage: " + sys.argv[0] + " <Input Dir> <Output Dir>")
            sys.exit(1)
 
+    # Grab the Command line params
     input_dir = sys.argv[1]
     output_dir = sys.argv[2]
 
     print "Input Dir = ", input_dir
     print "Output Dir = ", output_dir
 
+    # Create the grabber and kick off the search.
     grabber = FileNameGrabber(input_dir)
     grabber.getFileNames();
     print "How many files did I get? ", grabber.size()
 
+    # Create the transcoder and loop through files to transcode.
     encoder = TransCoder(output_dir)
     for filename in grabber:
         shortend_filename = filename[(len(input_dir)+1):]
