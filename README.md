@@ -16,7 +16,9 @@ guessit cuz it helps me figure out what the mimetype is and other things.
 pip install guessit
 ```
 
-Also you will need handbrake for transcodey things
+Also you will need HandBrakeCL for transcodey things.  The Command line version is different from the normal version.
+
+Download CLI here ---> https://handbrake.fr/downloads2.php
 
 ### TODO
 * Add ability to remove files as they are transcoded to save on disk space
