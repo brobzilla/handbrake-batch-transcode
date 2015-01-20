@@ -1,5 +1,6 @@
 # handbrake-batch-transcode
 Python script to take a directory of video files and transcode them.  For Brian Fowler
+I'm hoping this script will run on Linux, Mac, and Windows.
 
 ### Usage
 Run the script and it takes two parameters the input dir and the output dir.
@@ -20,3 +21,4 @@ Also you will need handbrake for transcodey things
 ### TODO
 * Add ability to remove files as they are transcoded to save on disk space
 * Actually do the transcoding using HandBrakeCLI
+* Add a check to verify HandBrakeCLI is installed and accessabily from this script
