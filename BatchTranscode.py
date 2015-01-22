@@ -1,8 +1,8 @@
-import sys
+import sys, time
 from os import walk, path, makedirs, utime
 from guessit import guess_file_info
 
-HANDBRAKE = "HandBrakeCLI"
+FFMPEG = "ffmpeg"
 
 class TransCoder(object):
 
@@ -27,30 +27,31 @@ class TransCoder(object):
         self.verifyOutputDir(path.join(self.__dir,self.__output_ext))
         outputname = path.join(self.__dir,self.__output_ext,self.__filename)
 
-        # Debugging command
-        #self.touch(outputname)
-
         # Capture the time we started
         start = time.time()
 
-        tmp = os.tmpfile()
-        po = Popen((HANDBRAKE, '-i%s' % (infile), '-t%s' % (title), '-o%s' % (outfile),
-                        '-f av_mkv',
-                        '-effmpeg', '-m', '-b2048', '-p',         #video options
-                                    '-B256', '-R48', '-66ch') , stderr=tmp)   #audio options
-        while po.poll() == None:
-            time.sleep(60)
-                sys.stdout.write('.')
-                sys.stdout.flush()
-                sys.stdout.write('n')
+        # Debugging command
+        self.touch(outputname)
 
-                #get total time
-                secs = time.time() - start
-                hrs = int(secs) / 3600
-                min = int(secs) % 3600 / 60
-                sec = int(secs) % 60
 
-                print 'Transcoded file (%d:%d:%d total time)' % (hrs, min, sec)
+        #tmp = os.tmpfile()
+        #po = Popen((FFMPEG, '-i%s' % (infile), '-t%s' % (title), '-o%s' % (outfile),
+        #                '-f av_mkv',
+        #                '-effmpeg', '-m', '-b2048', '-p',         #video options
+        #                            '-B256', '-R48', '-66ch') , stderr=tmp)   #audio options
+        #while po.poll() == None:
+        #    time.sleep(60)
+        #        sys.stdout.write('.')
+        #        sys.stdout.flush()
+        #        sys.stdout.write('n')
+
+        #get total time
+        secs = time.time() - start
+        hrs = int(secs) / 3600
+        min = int(secs) % 3600 / 60
+        sec = int(secs) % 60
+
+        print 'Transcoded file (%d:%d:%d total time)' % (hrs, min, sec)
 
 
 
