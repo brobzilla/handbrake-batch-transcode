@@ -1,49 +1,77 @@
 import sys, time
+from subprocess import Popen
 from os import walk, path, makedirs, utime
 from guessit import guess_file_info
 
-FFMPEG = "ffmpeg"
+AVCONV = "avconv"
 
 class TransCoder(object):
 
-    def __init__(self, dirname):
+    def __init__(self, outputroot):
         """ This is basically a constructor."""
-        self.setOutputDir(dirname)
+        self.setOutputRoot(outputroot)
+        self.verifyOutputDir(outputroot)
+        self.__tmp = open(path.join(outputroot, "log"), 'w')
 
-    def setOutputDir(self, dirname):
-        """ set the outdir for the transcoder """
-        self.__dir = dirname
+    def close(self):
+        self.__tmp.close();
 
-    def setFilename(self, output_extension, filename):
+    def setOutputRoot(self, outputroot):
+        """ set the outroot for the transcoder """
+        self.__output_root = outputroot
+
+    def setFilename(self, filename, input_dir):
         """ Set the filename to be transcoded """
-        self.__filename = filename
-        self.__output_ext = output_extension
+        # Remove the part of the dir  from the input root to the actual file.
+        shortend_filename = filename[(len(input_dir)+1):]
+        # split it and get the two parts.
+        head, tail = path.split(shortend_filename)
+
+        # trim off the extension and add .mkv so the new file will be that.
+        self.__output_filename = path.splitext(tail)[0] + ".mkv"
+        # Take output root plus the other dirs inside the root.
+        self.__output_dir = path.join(self.__output_root,head)
+        # input filename == filename.
+        self.__input_filename = filename;
+        # input == input ;)
+        self.__input_dir = input_dir
 
     def doTranscode(self):
         """ Actually transcode the file using handbrake commandline """
-        print "transcoding %s with handbrake to %s/%s/%s" \
-                % (self.__filename, self.__dir, self.__output_ext, self.__filename)
 
-        self.verifyOutputDir(path.join(self.__dir,self.__output_ext))
-        outputname = path.join(self.__dir,self.__output_ext,self.__filename)
+        # Verify output dir exisits if not create it.
+        self.verifyOutputDir(self.__output_dir)
+
+        # Join new file name and output dir to get full output.
+        outfile = path.join(self.__output_dir,self.__output_filename)
+
+        # Take the input dir and filename to get inputfile.
+        infile = path.join(self.__input_dir, self.__input_filename)
 
         # Capture the time we started
         start = time.time()
 
+
+        print "transcoding %s to %s" \
+                % (infile, outfile)
+
         # Debugging command
-        self.touch(outputname)
+        #self.touch(outfile)
 
+        # Trying to do this:
+        # avconv -i <input> -map 0:0 -map 0:1 -map 0:1 -c:v copy -c:a:0 aac -c:a:1 ac3 <output>
+        print "Check %s for log " % self.__tmp.name
+        po = Popen([AVCONV, '-i', infile,
+            '-map', '0:0', '-map', '0:1', '-map', '0:1',
+            '-c:v', 'copy', '-c:a:0', 'aac', '-c:a:1', 'ac3',
+            '-strict', 'experimental',
+            outfile], stderr=self.__tmp, stdout=self.__tmp)
 
-        #tmp = os.tmpfile()
-        #po = Popen((FFMPEG, '-i%s' % (infile), '-t%s' % (title), '-o%s' % (outfile),
-        #                '-f av_mkv',
-        #                '-effmpeg', '-m', '-b2048', '-p',         #video options
-        #                            '-B256', '-R48', '-66ch') , stderr=tmp)   #audio options
-        #while po.poll() == None:
-        #    time.sleep(60)
-        #        sys.stdout.write('.')
-        #        sys.stdout.flush()
-        #        sys.stdout.write('n')
+        while po.poll() == None:
+            time.sleep(1)
+            sys.stdout.write('.')
+            sys.stdout.flush()
+        print('')
 
         #get total time
         secs = time.time() - start
@@ -51,7 +79,7 @@ class TransCoder(object):
         min = int(secs) % 3600 / 60
         sec = int(secs) % 60
 
-        print 'Transcoded file (%d:%d:%d total time)' % (hrs, min, sec)
+        print 'Transcoded %s (%d:%d:%d total time)' % (outfile, hrs, min, sec)
 
 
 
@@ -64,7 +92,7 @@ class TransCoder(object):
 
     def touch(self, fname, times=None):
         """ Utility method to just touch files in the output dir to verify
-            script is preserving the directory structure correctly 
+            script is preserving the directory structure correctly
         """
         with open(fname, 'a'):
             utime(fname, times)
@@ -128,7 +156,7 @@ if __name__=="__main__":
     # Create the transcoder and loop through files to transcode.
     encoder = TransCoder(output_dir)
     for filename in grabber:
-        shortend_filename = filename[(len(input_dir)+1):]
-        head, tail = path.split(shortend_filename)
-        encoder.setFilename(head,tail)
+        encoder.setFilename(filename,input_dir)
         encoder.doTranscode();
+
+    encoder.close();
