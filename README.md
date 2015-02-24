@@ -18,7 +18,7 @@ pip install guessit
 
 Also you will need HandBrakeCL for transcodey things.  The Command line version is different from the normal version.
 
-Download CLI here ---> https://handbrake.fr/downloads2.php
+Download CLI here ---> https://handbrake.fr/downloads2.php  this is wrong now....using libav
 
 ### TODO
 * Add ability to remove files as they are transcoded to save on disk space
